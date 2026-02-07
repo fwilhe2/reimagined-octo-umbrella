@@ -62,3 +62,11 @@ body{
 .crosshair:after  { height: 2px; width: 28px; }
 
 .zword { font-family: monospace; font-weight:700; }
+.typed { color: #4ade80; font-weight: bold; }
+.next-char { 
+  background: rgba(251, 191, 36, 0.3);
+  padding: 0 2px;
+  color: #fbbf24;
+  font-weight: 900;
+}
+.remaining { color: #f0f4f8; }

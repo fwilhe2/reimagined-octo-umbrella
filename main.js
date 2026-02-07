@@ -43,7 +43,10 @@
       maxWordLen: 6,
       spawnBurstChance: 0.05,
       levelScoreDivisor: 800,      // slower level ups
-      initialZombies: 2
+      initialZombies: 2,
+      pauseChance: 0.0,           // temporarily disabled for testing
+      pauseMinDur: 800,            // min pause duration (ms)
+      pauseMaxDur: 1800            // max pause duration (ms)
     },
     normal: {
       spawnIntervalBase: 1000,
@@ -54,7 +57,10 @@
       maxWordLen: 10,
       spawnBurstChance: 0.12,
       levelScoreDivisor: 400,
-      initialZombies: 3
+      initialZombies: 3,
+      pauseChance: 0.15,
+      pauseMinDur: 600,
+      pauseMaxDur: 1200
     },
     hard: {
       spawnIntervalBase: 800,
@@ -65,7 +71,10 @@
       maxWordLen: 12,
       spawnBurstChance: 0.25,
       levelScoreDivisor: 250,
-      initialZombies: 4
+      initialZombies: 4,
+      pauseChance: 0.08,
+      pauseMinDur: 400,
+      pauseMaxDur: 800
     }
   };
 
@@ -99,6 +108,7 @@
       this.typed = 0;
       this.dead = false;
       this.selected = false;
+      this.pausedUntil = 0; // pause timer (ms)
     }
     project() {
       const z = Math.max(10, this.z);
@@ -107,7 +117,9 @@
       const sy = camera.cy() + 120 * scale;
       return { sx, sy, scale, z };
     }
-    update(dt) {
+    update(dt, now) {
+      // check if paused
+      if (now < this.pausedUntil) return;
       this.z -= this.speed * dt;
     }
   }
@@ -155,12 +167,18 @@
     const idx = Math.floor(Math.random() * laneCount) - Math.floor(laneCount/2);
     const x = idx * laneWidth + rand(-40, 40);
     const z = rand(1400, 2600);
-    const baseSpeed = rand(0.45, 0.9);
+    // more dramatic speed variation
+    const baseSpeed = rand(0.35, 1.1);
     const speed = baseSpeed * config.speedMult;
     // choose shorter words on easy by maxWordLen
     const wordCandidates = WORDS.filter(w => w.length <= config.maxWordLen);
     const word = wordCandidates[Math.floor(Math.random() * wordCandidates.length)];
-    zombies.push(new Zombie(word, x, z, speed));
+    const zombie = new Zombie(word, x, z, speed);
+    // randomly schedule initial pause
+    if (Math.random() < config.pauseChance) {
+      zombie.pausedUntil = performance.now() + rand(config.pauseMinDur, config.pauseMaxDur);
+    }
+    zombies.push(zombie);
   }
 
   function rand(a,b){return a + Math.random()*(b-a);}
@@ -267,11 +285,15 @@
     levelEl.textContent = `Level: ${level}`;
     livesEl.textContent = `Lives: ${lives}`;
     if (selected && !selected.dead) {
-      targetWordEl.innerHTML = `Target: <span class="zword">${selected.word}</span>`;
-      typedPreviewEl.textContent = `Typed: ${selected.word.slice(0, selected.typed)}`;
+      const word = selected.word;
+      const typed = word.slice(0, selected.typed);
+      const remaining = word.slice(selected.typed);
+      targetWordEl.innerHTML = `Target: <span class="typed">${typed}</span><span class="next-char">${remaining[0] || ''}</span><span class="remaining">${remaining.slice(1)}</span>`;
+      const progress = Math.round((selected.typed / word.length) * 100);
+      typedPreviewEl.innerHTML = `Progress: ${progress}%`;
     } else {
       targetWordEl.textContent = `Target: —`;
-      typedPreviewEl.textContent = `Typed: `;
+      typedPreviewEl.textContent = `Progress: `;
     }
   }
 
@@ -311,7 +333,7 @@
       }
 
       // update zombies
-      for (const z of zombies) if (!z.dead) z.update(dt);
+      for (const z of zombies) if (!z.dead) z.update(dt, now);
 
       // zombies reached camera
       for (const z of zombies) {
@@ -400,17 +422,35 @@
         ctx.stroke();
       }
 
+      // show pause indicator if paused
+      if (now < z.pausedUntil) {
+        ctx.fillStyle = "rgba(255,200,87,0.9)";
+        ctx.font = `bold ${Math.max(10, 14 * scale)}px serif`;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText("⏸", 0, -size*0.38);
+      }
+
       // word label
-      ctx.font = `bold ${Math.max(12, 18 * scale)}px monospace`;
+      const fontSize = Math.max(14, 20 * scale);
+      ctx.font = `bold ${fontSize}px monospace`;
       ctx.textAlign = "center";
       ctx.textBaseline = "top";
       const typedPart = z.word.slice(0, z.typed);
       const restPart = z.word.slice(z.typed);
 
-      ctx.fillStyle = "#e85a4f";
-      ctx.fillText(typedPart, 0 - ctx.measureText(restPart).width/2, size*0.18);
-      ctx.fillStyle = "#e6eef8";
-      ctx.fillText(restPart, ctx.measureText(typedPart).width/2, size*0.18);
+      // draw darker background behind text for better readability
+      const metrics = ctx.measureText(z.word);
+      ctx.fillStyle = "rgba(0,0,0,0.6)";
+      ctx.fillRect(-metrics.width/2 - 6, size*0.18 -  4, metrics.width + 12, fontSize + 8);
+
+      // typed part in green
+      ctx.fillStyle = "#4ade80";
+      ctx.fillText(typedPart, -metrics.width/2, size*0.18);
+      
+      // remaining in bright white
+      ctx.fillStyle = "#f0f4f8";
+      ctx.fillText(restPart, -metrics.width/2 + ctx.measureText(typedPart).width, size*0.18);
 
       ctx.restore();
     }
