@@ -431,26 +431,25 @@
         ctx.fillText("⏸", 0, -size*0.38);
       }
 
-      // word label
-      const fontSize = Math.max(14, 20 * scale);
-      ctx.font = `bold ${fontSize}px monospace`;
+      // word label - much simpler version
+      ctx.font = `bold ${Math.max(12, 18 * scale)}px monospace`;
       ctx.textAlign = "center";
       ctx.textBaseline = "top";
       const typedPart = z.word.slice(0, z.typed);
       const restPart = z.word.slice(z.typed);
 
-      // draw darker background behind text for better readability
-      const metrics = ctx.measureText(z.word);
-      ctx.fillStyle = "rgba(0,0,0,0.6)";
-      ctx.fillRect(-metrics.width/2 - 6, size*0.18 -  4, metrics.width + 12, fontSize + 8);
+      // draw box behind text
+      const box = ctx.measureText(z.word);
+      ctx.fillStyle = "rgba(0,0,0,0.5)";
+      ctx.fillRect(-box.width/2 - 5, size*0.15, box.width + 10, Math.max(12, 18 * scale) + 4);
 
-      // typed part in green
+      // typed in green
       ctx.fillStyle = "#4ade80";
-      ctx.fillText(typedPart, -metrics.width/2, size*0.18);
+      ctx.fillText(typedPart, -box.width/2, size*0.18);
       
-      // remaining in bright white
+      // rest in white
       ctx.fillStyle = "#f0f4f8";
-      ctx.fillText(restPart, -metrics.width/2 + ctx.measureText(typedPart).width, size*0.18);
+      ctx.fillText(restPart, -box.width/2 + ctx.measureText(typedPart).width, size*0.18);
 
       ctx.restore();
     }
