@@ -44,9 +44,9 @@
       spawnBurstChance: 0.05,
       levelScoreDivisor: 800,      // slower level ups
       initialZombies: 2,
-      pauseChance: 0.0,           // temporarily disabled for testing
-      pauseMinDur: 800,            // min pause duration (ms)
-      pauseMaxDur: 1800            // max pause duration (ms)
+      pauseChance: 0.12,           // 12% chance zombie pauses mid-approach
+      pauseMinDur: 500,            // min pause duration (ms)
+      pauseMaxDur: 1200            // max pause duration (ms)
     },
     normal: {
       spawnIntervalBase: 1000,
@@ -108,7 +108,7 @@
       this.typed = 0;
       this.dead = false;
       this.selected = false;
-      this.pausedUntil = 0; // pause timer (ms)
+      this.pauseUntil = 0; // pause timer
     }
     project() {
       const z = Math.max(10, this.z);
@@ -117,9 +117,7 @@
       const sy = camera.cy() + 120 * scale;
       return { sx, sy, scale, z };
     }
-    update(dt, now) {
-      // check if paused
-      if (now < this.pausedUntil) return;
+    update(dt) {
       this.z -= this.speed * dt;
     }
   }
@@ -167,18 +165,13 @@
     const idx = Math.floor(Math.random() * laneCount) - Math.floor(laneCount/2);
     const x = idx * laneWidth + rand(-40, 40);
     const z = rand(1400, 2600);
-    // more dramatic speed variation
-    const baseSpeed = rand(0.35, 1.1);
+    // varied speed: more dramatic range
+    const baseSpeed = rand(0.4, 1.2);
     const speed = baseSpeed * config.speedMult;
     // choose shorter words on easy by maxWordLen
     const wordCandidates = WORDS.filter(w => w.length <= config.maxWordLen);
     const word = wordCandidates[Math.floor(Math.random() * wordCandidates.length)];
-    const zombie = new Zombie(word, x, z, speed);
-    // randomly schedule initial pause
-    if (Math.random() < config.pauseChance) {
-      zombie.pausedUntil = performance.now() + rand(config.pauseMinDur, config.pauseMaxDur);
-    }
-    zombies.push(zombie);
+    zombies.push(new Zombie(word, x, z, speed));
   }
 
   function rand(a,b){return a + Math.random()*(b-a);}
@@ -333,7 +326,7 @@
       }
 
       // update zombies
-      for (const z of zombies) if (!z.dead) z.update(dt, now);
+      for (const z of zombies) if (!z.dead) z.update(dt);
 
       // zombies reached camera
       for (const z of zombies) {
@@ -420,15 +413,6 @@
         ctx.beginPath();
         ctx.arc(0, -size*0.18, size*0.36, 0, Math.PI*2);
         ctx.stroke();
-      }
-
-      // show pause indicator if paused
-      if (now < z.pausedUntil) {
-        ctx.fillStyle = "rgba(255,200,87,0.9)";
-        ctx.font = `bold ${Math.max(10, 14 * scale)}px serif`;
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.fillText("⏸", 0, -size*0.38);
       }
 
       // word label - much simpler version
