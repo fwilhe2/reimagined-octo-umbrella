@@ -1,0 +1,64 @@
+:root{
+  --bg-top: #071021;
+  --bg-bottom: #08151f;
+  --panel: rgba(255,255,255,0.04);
+  --accent: #e85a4f;
+  --text: #e6eef8;
+  --muted: #9fb0c8;
+}
+
+*{box-sizing:border-box;margin:0;padding:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;}
+html,body,#ui{height:100%;}
+body{
+  background: linear-gradient(180deg, var(--bg-top) 0%, var(--bg-bottom) 100%);
+  color:var(--text);
+  overflow:hidden;
+}
+
+#topbar{
+  position:fixed;top:12px;left:12px;display:flex;gap:12px;z-index:30;
+}
+#topbar > div{background:var(--panel);padding:8px 12px;border-radius:8px;font-weight:700;color:var(--text);font-size:14px;}
+
+#game{
+  display:block;
+  width:100vw;
+  height:100vh;
+  background:transparent;
+  cursor: crosshair;
+}
+
+#hud{position:fixed;left:12px;bottom:12px;z-index:30;display:flex;flex-direction:column;gap:6px;}
+#hud > div{background:var(--panel);padding:8px 12px;border-radius:8px;color:var(--muted);min-width:220px}
+
+#controls{position:fixed;right:12px;bottom:12px;z-index:30;display:flex;gap:8px;}
+#controls button{padding:8px 12px;border-radius:8px;border:1px solid rgba(255,255,255,0.06);background:rgba(255,255,255,0.03);color:var(--text);cursor:pointer}
+#controls button:active{transform:translateY(1px)}
+
+#overlay{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg, rgba(0,0,0,0.65), rgba(0,0,0,0.45));z-index:50;backdrop-filter: blur(3px);}
+#overlay.hidden{display:none}
+.center{background:var(--panel);padding:28px;border-radius:12px;max-width:720px;text-align:center;color:var(--text)}
+.center h1{margin-bottom:8px}
+.center p{color:var(--muted);margin:8px 0}
+
+.crosshair {
+  position: absolute;
+  width: 28px;
+  height: 28px;
+  left: calc(50% - 14px);
+  top: calc(50% - 14px);
+  pointer-events: none;
+  z-index: 25;
+}
+.crosshair:before, .crosshair:after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  background: var(--accent);
+  transform: translate(-50%, -50%);
+}
+.crosshair:before { width: 2px; height: 28px; }
+.crosshair:after  { height: 2px; width: 28px; }
+
+.zword { font-family: monospace; font-weight:700; }

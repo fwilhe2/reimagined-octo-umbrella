@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="ui">
+    <div id="topbar">
+      <div id="score">Score: 0</div>
+      <div id="level">Level: 1</div>
+      <div id="lives">Lives: 3</div>
+    </div>
+
+    <canvas id="game"></canvas>
+
+    <div id="hud">
+      <div id="targetWord">Target: —</div>
+      <div id="typedPreview">Typed: </div>
+    </div>
+
+    <div id="controls">
+      <button id="startBtn">Start</button>
+      <button id="pauseBtn">Pause</button>
+      <button id="restartBtn">Restart</button>
+    </div>
+
+    <div id="overlay" class="visible">
+      <div class="center">
+        <h1>Typing Rail Shooter — Prototype</h1>
+        <p>First-person rail shooting feel. Enemies approach from the distance; type their words to kill them before they reach you.</p>
+        <p><strong>Controls:</strong> Type letters to target & kill (preferred). Click an enemy to select it.</p>
+
+        <div style="margin:12px 0; text-align:left;">
+          <label style="display:block;margin-bottom:6px;color:#9fb0c8">Choose difficulty</label>
+          <label><input type="radio" name="difficulty" value="easy" checked> Easy — fewer, slower zombies, shorter words</label><br>
+          <label><input type="radio" name="difficulty" value="normal"> Normal — default prototype behavior</label><br>
+          <label><input type="radio" name="difficulty" value="hard"> Hard — faster, more enemies, quicker ramp</label>
+        </div>
+
+        <button id="overlayStart">Start Game</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="main.js" defer></script>
+</body>
+</html>
